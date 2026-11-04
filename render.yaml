@@ -1,0 +1,23 @@
+databases:
+  - name: cv-database
+    databaseName: cvdb
+    user: cvuser
+    plan: free
+
+services:
+  - type: web
+    name: cv-sharing-api
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn cv_project.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cv-database
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+
