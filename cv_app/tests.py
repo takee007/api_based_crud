@@ -70,15 +70,17 @@ class StudentCVAPITestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertIn("Incorrect password", response.json()['error'])
 
-    def test_student_b_cannot_modify_student_a(self):
-        """Student B is logged in, but tries to update Student A's CV -> 403 Forbidden"""
-        # Log in as Student B
+    def test_student_b_can_edit_student_a_cv(self):
+        """Collaborative mode: Student B can edit Student A's CV -> 200 OK"""
         token_b = self.cv_b.generate_token()
 
         update_payload = {
-            "name": "Tampered Name By Student B",
+            "name": "Farzana Sadia Takeei (Peer Reviewed)",
             "student_id": "2211175",
-            "email": "2211175@iub.edu.bd"
+            "email": "2211175@iub.edu.bd",
+            "education": "BSc in CSE",
+            "skills": ["Flutter", "Python", "Cybersecurity", "Django REST"],
+            "experience": "Updated by peer collaborator"
         }
         response = self.client.put(
             f'/api/cvs/{self.cv_a.id}/',
@@ -86,10 +88,10 @@ class StudentCVAPITestCase(TestCase):
             format='json',
             HTTP_AUTHORIZATION=f"Bearer {token_b}"
         )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        # Verify in DB that Student A's CV was not changed
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Verify in DB that Student A's CV was updated
         self.cv_a.refresh_from_db()
-        self.assertEqual(self.cv_a.name, "Farzana Sadia Takeei")
+        self.assertEqual(self.cv_a.name, "Farzana Sadia Takeei (Peer Reviewed)")
 
     def test_student_a_can_update_own_cv(self):
         """Student A is logged in and updates their own CV -> 200 OK"""

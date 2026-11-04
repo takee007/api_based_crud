@@ -48,45 +48,16 @@ class StudentCVViewSet(viewsets.ModelViewSet):
             pin = request.query_params.get('pin') or request.query_params.get('passcode')
         return str(pin).strip() if pin else ''
 
-    def _verify_owner_permission(self, instance, request):
-        # 1. Check if authenticated via individual login token
-        token = self._extract_token(request)
-        if token:
-            logged_in_student = StudentCV.objects.filter(auth_token=token).first()
-            if logged_in_student:
-                if logged_in_student.id == instance.id:
-                    return True  # Authorized as owner!
-                else:
-                    raise PermissionDenied(
-                        f"Permission Denied: You are logged in as '{logged_in_student.name}' (ID: {logged_in_student.student_id}). "
-                        f"No one can edit or delete another person's CV! This CV belongs to '{instance.name}'."
-                    )
-            else:
-                raise PermissionDenied("Permission Denied: Invalid or expired login session. Please log in again.")
-
-        # 2. Check direct PIN / Password authentication (for Postman / direct API)
-        provided_pin = self._extract_pin(request)
-        if provided_pin and instance.check_passcode(provided_pin):
-            return True
-
-        raise PermissionDenied(
-            f"Permission Denied: No one can edit or delete another person's CV! "
-            f"Only '{instance.name}' (ID: {instance.student_id}) is authorized to modify this record."
-        )
-
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self._verify_owner_permission(instance, request)
+        # Open collaborative access: everyone can edit any student's CV
         return super().update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self._verify_owner_permission(instance, request)
+        # Open collaborative access: everyone can edit any student's CV
         return super().partial_update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        self._verify_owner_permission(instance, request)
         instance_id = instance.id
         instance_name = instance.name
         self.perform_destroy(instance)

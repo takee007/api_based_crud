@@ -48,13 +48,13 @@
   <section class="hero-banner">
     <h2>Multi-Student Shared CV Database</h2>
     <p>
-      Create your CV via the REST API and view classmates' CVs in real time from a single central database. Only you can edit or delete your own CV.
+      Create, view, and edit CVs in real time from a single central database. Open collaborative editing across all students.
     </p>
     <div class="architecture-pills">
       <div class="arch-pill"><span>🖥️</span> System 1: Frontend UI</div>
       <div class="arch-pill"><span>⚡</span> System 2: Django REST API</div>
-      <div class="arch-pill"><span>🗄️</span> Shared Database: PostgreSQL / SQLite</div>
-      <div class="arch-pill"><span>🔒</span> Passcode Security: 403 Forbidden on Unauthorized Updates</div>
+      <div class="arch-pill"><span>🗄️</span> Shared Database: PostgreSQL</div>
+      <div class="arch-pill"><span>✏️</span> Collaborative Access: Everyone Can Edit CVs</div>
     </div>
   </section>
 
@@ -118,9 +118,9 @@
             </div>
 
             <div class="info-tile" style="background:#f0fdf4; border-color:#bbf7d0;">
-              <div class="info-tile-title" style="color:#16a34a;">🔒 Ownership & Permissions Status</div>
+              <div class="info-tile-title" style="color:#16a34a;">🌐 Collaborative Access Mode</div>
               <div style="font-size:0.88rem; color:#166534;">
-                This CV is stored in the central database. Other students (Student B, Student C) can view it in the Directory, but only someone with the secret PIN can modify or delete it.
+                This CV is stored in the central database. All students (Student A, B, C) can view and edit each other's CV records in real time.
               </div>
             </div>
           </div>

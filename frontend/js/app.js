@@ -292,22 +292,13 @@ async function handleFormSubmit(e) {
 
 // 4. DELETE: Delete CV (DELETE /api/cvs/<id>/)
 async function deleteCV(id, name) {
-  const isOwner = currentUser && currentUser.id === id;
-  let pin = '';
-
-  if (!isOwner) {
-    pin = prompt(`To delete ${name}'s CV (#${id}), enter the owner password/PIN:`, activeCVPin || '');
-    if (pin === null) return; // User cancelled
-  }
-
-  if (!confirm(`Are you sure you want to permanently delete CV #${id} (${name})?`)) {
+  if (!confirm(`Are you sure you want to delete ${name}'s CV (#${id})?`)) {
     return;
   }
 
   try {
     const headers = {};
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-    if (pin) headers['X-CV-PIN'] = pin;
 
     const res = await fetch(`${API_BASE}${id}/`, {
       method: 'DELETE',
@@ -317,9 +308,6 @@ async function deleteCV(id, name) {
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      if (res.status === 403) {
-        throw new Error(data.detail || "Permission Denied: Invalid credentials! Only the owner can delete their CV.");
-      }
       throw new Error(data.detail || `HTTP Error ${res.status}`);
     }
 
@@ -376,22 +364,16 @@ function renderMyProfile(cv) {
   const editBtn = document.getElementById('btnEditMyCV');
   const deleteBtn = document.getElementById('btnDeleteMyCV');
 
-  if (isOwner) {
-    editBtn.style.display = 'inline-flex';
-    deleteBtn.style.display = 'inline-flex';
-    editBtn.onclick = () => openEditModal(cv);
-    deleteBtn.onclick = () => deleteCV(cv.id, cv.name);
-  } else {
-    // Strict restriction: no one can edit or delete another student's CV
-    editBtn.style.display = 'none';
-    deleteBtn.style.display = 'none';
-  }
+  editBtn.style.display = 'inline-flex';
+  deleteBtn.style.display = 'inline-flex';
+  editBtn.onclick = () => openEditModal(cv);
+  deleteBtn.onclick = () => deleteCV(cv.id, cv.name);
 }
 
 function renderEmptyProfile() {
   document.getElementById('myName').innerText = 'No CV Selected';
   document.getElementById('mySubtext').innerText = 'Please sign in or select a CV from the Directory.';
-  document.getElementById('myBio').innerText = 'Log in to view and edit your own CV.';
+  document.getElementById('myBio').innerText = 'Select any student from the Directory or create a new CV.';
   document.getElementById('mySkills').innerHTML = '';
   document.getElementById('btnEditMyCV').style.display = 'none';
   document.getElementById('btnDeleteMyCV').style.display = 'none';
@@ -442,8 +424,8 @@ function renderDirectory(cvList) {
         <button class="btn btn-outline" onclick="openViewModal(${cv.id})">
           👁️ View CV
         </button>
-        <button class="btn ${isOwner ? 'btn-primary' : 'btn-outline'}" onclick="handleCardAction(${cv.id})">
-          ${isOwner ? '✏️ Edit My CV' : '👁️ View Profile'}
+        <button class="btn btn-primary" onclick="openEditModal(allCVs.find(c => c.id === ${cv.id}))">
+          ✏️ Edit CV
         </button>
       </div>
     `;
@@ -452,15 +434,9 @@ function renderDirectory(cvList) {
 }
 
 function handleCardAction(cvId) {
-  const isOwner = currentUser && currentUser.id === cvId;
   const cv = allCVs.find(c => c.id === cvId);
   if (!cv) return;
-
-  if (isOwner) {
-    openEditModal(cv);
-  } else {
-    openViewModal(cvId);
-  }
+  openEditModal(cv);
 }
 
 // Filter Directory
@@ -532,13 +508,8 @@ async function openViewModal(id) {
 
     <div style="display:flex; gap:0.75rem; justify-content:flex-end; align-items:center; margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1rem;">
       <button class="btn btn-outline" onclick="copyCVJson(${cv.id})">📋 Copy JSON</button>
-      ${isOwner 
-        ? `<button class="btn btn-primary" onclick="closeModal('viewDetailsModal'); openEditModal(allCVs.find(c => c.id === ${cv.id}))">✏️ Edit My CV</button>
-           <button class="btn btn-danger" onclick="deleteCV(${cv.id}, '${cv.name}')">🗑️ Delete</button>`
-        : `<div style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.4rem 0.85rem; background:#fee2e2; color:#991b1b; border-radius:6px; font-size:0.8rem; font-weight:700;">
-             🔒 Read-Only: Only ${cv.name} can edit or delete this CV.
-           </div>`
-      }
+      <button class="btn btn-primary" onclick="closeModal('viewDetailsModal'); openEditModal(allCVs.find(c => c.id === ${cv.id}))">✏️ Edit CV</button>
+      <button class="btn btn-danger" onclick="deleteCV(${cv.id}, '${cv.name}')">🗑️ Delete</button>
     </div>
   `;
 
@@ -574,19 +545,7 @@ function openCreateModal() {
 function openEditModal(cv) {
   if (!cv) return;
 
-  // Strict Security Check: No one can edit another person's CV!
-  if (currentUser && currentUser.id !== cv.id) {
-    showToast(`Access Denied: You cannot edit ${cv.name}'s CV! Only ${cv.name} is allowed to edit their CV.`, 'error');
-    return;
-  }
-
-  if (!currentUser) {
-    showToast('Please sign in to edit your CV.', 'error');
-    window.location.href = '/login/';
-    return;
-  }
-
-  cvModalTitle.innerText = `Edit My CV #${cv.id} (${cv.name})`;
+  cvModalTitle.innerText = `Edit CV #${cv.id} (${cv.name})`;
   document.getElementById('formCvId').value = cv.id;
   document.getElementById('formName').value = cv.name;
   document.getElementById('formStudentId').value = cv.student_id;
@@ -597,8 +556,8 @@ function openEditModal(cv) {
   document.getElementById('formExperience').value = cv.experience || '';
   document.getElementById('formBio').value = cv.bio || '';
   document.getElementById('formAvatarUrl').value = cv.avatar_url || '';
-  document.getElementById('formPasscode').value = localStorage.getItem('active_cv_pin') || '';
-  document.getElementById('formPasscode').placeholder = 'Leave blank or update password';
+  document.getElementById('formPasscode').value = '';
+  document.getElementById('formPasscode').placeholder = 'Leave blank to keep password';
   document.getElementById('formPasscode').required = false;
 
   openModal('cvFormModal');

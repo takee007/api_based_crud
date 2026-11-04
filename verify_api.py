@@ -60,17 +60,24 @@ def run_live_verification():
     cv_a = r_a.json()
     print(f"Classmate Name: {cv_a['name']} | Degree: {cv_a['education']}")
 
-    # 5. ATTEMPT UNAUTHORIZED UPDATE OF CLASSMATE'S CV (Should return 403 Forbidden)
-    print("\n[TEST 5] PUT /api/cvs/101/ (Student B attempts to edit Student A's CV - Expected 403)")
-    hack_res = client.put(
+    # 5. COLLABORATIVE EDIT OF CLASSMATE'S CV (Everyone can edit)
+    print("\n[TEST 5] PUT /api/cvs/101/ (Student B edits Student A's CV - Collaborative Access)")
+    collab_res = client.put(
         '/api/cvs/101/',
-        data={"name": "Hacked Name By Student B"},
+        data={
+            "name": "Farzana Sadia Takeei (Updated by Peer)",
+            "student_id": "2211175",
+            "email": "2211175@iub.edu.bd",
+            "education": "BSc in Computer Science & Engineering",
+            "skills": ["Flutter", "Python", "Cybersecurity", "REST API", "Docker"],
+            "experience": "Software Development & Mobile Apps"
+        },
         format='json',
         HTTP_AUTHORIZATION=f"Bearer {token_b}"
     )
-    print(f"Status Code: {hack_res.status_code} (Expected 403 Forbidden)")
-    print(f"Response: {hack_res.json()}")
-    assert hack_res.status_code == 403
+    print(f"Status Code: {collab_res.status_code} (Expected 200 OK)")
+    assert collab_res.status_code == 200
+    print(f"Updated Student A Name: {collab_res.json()['name']}")
 
     # 6. UPDATE OWN CV (Authorized 200 OK)
     print("\n[TEST 6] PUT /api/cvs/102/ (Student B updates their OWN CV with Bearer token)")

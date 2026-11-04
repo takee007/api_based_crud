@@ -110,14 +110,12 @@ The project is now connected directly to your local **PostgreSQL (v18)** instanc
 
 ---
 
-## 🔒 Owner Authorization Model (How classmates' CVs are protected)
+## 🌐 Collaborative Access Model (Open Editing)
 
-When a student creates a CV, they enter a secret **PIN/Passcode** (or default to their Student ID).
-- The secret PIN is stored as a secure cryptographic hash in the database and **is never returned** in any GET API responses.
-- To **Update** (`PUT`) or **Delete** (`DELETE`), the request must include the PIN via:
-  1. HTTP Header: `X-CV-PIN: <pin>`
-  2. Or JSON Request Body: `"passcode": "<pin>"`
-- If a classmate tries to edit another student's CV without their PIN, the server rejects it with **`403 Forbidden`**.
+All students can interact with the central shared database:
+- **Shared Access:** Student A, Student B, and Student C can browse all profiles in the Directory.
+- **Collaborative Editing:** Any student can create, update, or edit any student's CV in real time.
+- **Immediate Synchronization:** Any update made to a CV is immediately reflected across all clients and persisted in the central PostgreSQL database.
 
 ---
 
