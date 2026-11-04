@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login - Student CV Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .login-page-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 1.5rem;
+      background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    }
+
+    .auth-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 480px;
+      overflow: hidden;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-header {
+      background: linear-gradient(135deg, #312e81 0%, #4338ca 100%);
+      color: white;
+      padding: 2.25rem 2rem;
+      text-align: center;
+    }
+
+    .auth-header h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 0.35rem;
+    }
+
+    .auth-header p {
+      font-size: 0.88rem;
+      color: #e0e7ff;
+    }
+
+    .auth-body {
+      padding: 2rem;
+    }
+
+    .auth-toggle-tabs {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: var(--radius-sm);
+      padding: 0.3rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .auth-toggle-tab {
+      flex: 1;
+      padding: 0.6rem;
+      text-align: center;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+
+    .auth-toggle-tab.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .demo-accounts-panel {
+      margin-top: 1.75rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .demo-accounts-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .demo-chips {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .demo-chip {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.78rem;
+    }
+
+    .demo-chip:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .demo-chip-name {
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .demo-chip-id {
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .auth-footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-page-wrapper">
+    
+    <div class="auth-card">
+      
+      <div class="auth-header">
+        <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🎓</div>
+        <h2>Student CV Hub</h2>
+        <p>Individual Student Authentication</p>
+      </div>
+
+      <div class="auth-body">
+        
+        <!-- Toggle Tabs: Login vs Register -->
+        <div class="auth-toggle-tabs">
+          <button class="auth-toggle-tab active" id="tabBtnLogin" onclick="setAuthMode('login')">🔑 Sign In</button>
+          <button class="auth-toggle-tab" id="tabBtnRegister" onclick="setAuthMode('register')">📝 Register New Account</button>
+        </div>
+
+        <!-- FORM 1: LOGIN -->
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label for="loginIdentifier">Student ID or Email *</label>
+            <input type="text" id="loginIdentifier" required placeholder="e.g. 2230907 or student@iub.edu.bd" autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword">Password *</label>
+            <input type="password" id="loginPassword" required placeholder="Enter your password" autocomplete="current-password">
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem;" id="btnLoginSubmit">
+            Sign In to My Account
+          </button>
+        </form>
+
+        <!-- FORM 2: REGISTER -->
+        <form id="registerForm" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="regName">Full Name *</label>
+              <input type="text" id="regName" required placeholder="e.g. Md. Jariful Abedin">
+            </div>
+            <div class="form-group">
+              <label for="regStudentId">Student ID *</label>
+              <input type="text" id="regStudentId" required placeholder="e.g. 2230907">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="regEmail">Email *</label>
+              <input type="email" id="regEmail" required placeholder="student@iub.edu.bd">
+            </div>
+            <div class="form-group">
+              <label for="regPassword">Password *</label>
+              <input type="password" id="regPassword" required placeholder="Create a password" autocomplete="new-password">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="regEducation">Degree / Major *</label>
+            <input type="text" id="regEducation" required value="BSc in Computer Science & Engineering" placeholder="e.g. BSc in CSE">
+          </div>
+
+          <div class="form-group">
+            <label for="regSkills">Technical Skills (Comma separated) *</label>
+            <input type="text" id="regSkills" required placeholder="e.g. Flutter, Python, Django, PostgreSQL">
+          </div>
+
+          <div class="form-group">
+            <label for="regExperience">Experience / Specialization</label>
+            <input type="text" id="regExperience" placeholder="e.g. Mobile Developer & API Designer">
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem;" id="btnRegisterSubmit">
+            Create Account & Save My CV
+          </button>
+        </form>
+
+        <!-- 1-Click Quick Demo Logins for Classmates & Teacher -->
+        <div class="demo-accounts-panel">
+          <div class="demo-accounts-title">
+            <span>⚡</span> Quick Demo Logins (Click to Log In)
+          </div>
+          <div class="demo-chips">
+            <div class="demo-chip" onclick="quickLogin('2230907', '2230907')">
+              <div class="demo-chip-name">Md. Jariful Abedin Ovi</div>
+              <div class="demo-chip-id">ID: 2230907 (Flutter / DRF)</div>
+            </div>
+            <div class="demo-chip" onclick="quickLogin('2211175', '1234')">
+              <div class="demo-chip-name">Farzana Sadia Takeei</div>
+              <div class="demo-chip-id">ID: 2211175 (Cybersecurity)</div>
+            </div>
+            <div class="demo-chip" onclick="quickLogin('2220451', '1234')">
+              <div class="demo-chip-name">Tanvir Hasan</div>
+              <div class="demo-chip-id">ID: 2220451 (Backend)</div>
+            </div>
+            <div class="demo-chip" onclick="quickLogin('2221304', '1234')">
+              <div class="demo-chip-name">Ayesha Siddiqua</div>
+              <div class="demo-chip-id">ID: 2221304 (React / Web)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-footer">
+          <p>Want to inspect all CVs first? <a href="/">Browse Directory as Guest &rarr;</a></p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // Check if user is already logged in
+    const existingToken = localStorage.getItem('auth_token');
+    if (existingToken) {
+      // Validate token via /api/auth/me/
+      fetch('/api/auth/me/', {
+        headers: { 'Authorization': `Bearer ${existingToken}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.cv) {
+          // Already logged in, redirect to home
+          window.location.href = '/';
+        }
+      })
+      .catch(() => {});
+    }
+
+    function setAuthMode(mode) {
+      const isLogin = mode === 'login';
+      document.getElementById('tabBtnLogin').classList.toggle('active', isLogin);
+      document.getElementById('tabBtnRegister').classList.toggle('active', !isLogin);
+      document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+      document.getElementById('registerForm').style.display = !isLogin ? 'block' : 'none';
+    }
+
+    // 1-Click Demo Login
+    function quickLogin(studentId, password) {
+      document.getElementById('loginIdentifier').value = studentId;
+      document.getElementById('loginPassword').value = password;
+      setAuthMode('login');
+      handleLoginSubmit(new Event('submit'));
+    }
+
+    // Handle Login Submit
+    async function handleLoginSubmit(e) {
+      if (e) e.preventDefault();
+      const identifier = document.getElementById('loginIdentifier').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const submitBtn = document.getElementById('btnLoginSubmit');
+
+      if (!identifier || !password) {
+        showToast('Please enter both Student ID and Password.', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Signing In...';
+
+      try {
+        const res = await fetch('/api/auth/login/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ student_id: identifier, password: password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Login failed. Please check your credentials.');
+        }
+
+        // Store login session
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('active_cv_id', data.cv.id);
+        localStorage.setItem('active_cv_pin', password);
+        localStorage.setItem('active_student_name', data.cv.name);
+        localStorage.setItem('active_student_id', data.cv.student_id);
+
+        showToast(`Login successful! Welcome back, ${data.cv.name}!`, 'success');
+
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 800);
+
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Sign In to My Account';
+      }
+    }
+
+    // Handle Register Submit
+    async function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const student_id = document.getElementById('regStudentId').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value.trim();
+      const education = document.getElementById('regEducation').value.trim();
+      const rawSkills = document.getElementById('regSkills').value;
+      const skillsArray = rawSkills.split(',').map(s => s.trim()).filter(Boolean);
+      const experience = document.getElementById('regExperience').value.trim();
+
+      const submitBtn = document.getElementById('btnRegisterSubmit');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Creating Account...';
+
+      try {
+        const res = await fetch('/api/auth/register/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            student_id,
+            email,
+            password,
+            passcode: password,
+            education,
+            skills: skillsArray,
+            experience,
+            bio: `I am ${name}, studying ${education}.`
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          const errMsg = data.error || Object.values(data).flat().join(' ') || 'Registration failed.';
+          throw new Error(errMsg);
+        }
+
+        // Store login session
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('active_cv_id', data.cv.id);
+        localStorage.setItem('active_cv_pin', password);
+        localStorage.setItem('active_student_name', data.cv.name);
+        localStorage.setItem('active_student_id', data.cv.student_id);
+
+        showToast(`Account created and CV saved for ${data.cv.name}!`, 'success');
+
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 900);
+
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Create Account & Save My CV';
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icon = type === 'success' ? '✅' : type === 'error' ? '⚠️' : 'ℹ️';
+      toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
+
