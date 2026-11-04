@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student CV Hub - REST API CRUD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand">
+        <div class="brand-icon">🎓</div>
+        <div class="brand-text">
+          <h1>Student CV Hub</h1>
+          <span>REST API • Shared Database</span>
+        </div>
+      </a>
+      <div class="nav-actions">
+        <!-- Logged In User State -->
+        <div id="navUserBadge" style="display:none; align-items:center; gap:0.6rem; background:#f1f5f9; padding:0.35rem 0.85rem; border-radius:999px; border:1px solid #e2e8f0;">
+          <img id="navUserAvatar" src="" style="width:24px; height:24px; border-radius:50%; object-fit:cover;" alt="User">
+          <span id="navUserName" style="font-size:0.83rem; font-weight:700; color:var(--text-primary);">---</span>
+          <span id="navUserId" style="font-size:0.75rem; color:var(--primary); font-weight:700;">(---)</span>
+          <button onclick="handleLogout()" class="btn btn-outline" style="font-size:0.72rem; padding:0.2rem 0.5rem; margin-left:0.25rem;">Sign Out</button>
+        </div>
+
+        <!-- Guest / Not Logged In State -->
+        <div id="navGuestBadge" style="display:flex; align-items:center; gap:0.5rem;">
+          <a href="/login/" class="nav-btn nav-btn-primary" style="text-decoration:none;">
+            <span>🔑</span> Student Sign In
+          </a>
+        </div>
+
+        <a href="/login/" class="nav-btn nav-btn-ghost" style="text-decoration:none; font-size:0.82rem;">
+          <span>🔄</span> Switch Account
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Architecture Banner -->
+  <section class="hero-banner">
+    <h2>Multi-Student Shared CV Database</h2>
+    <p>
+      Create your CV via the REST API and view classmates' CVs in real time from a single central database. Only you can edit or delete your own CV.
+    </p>
+    <div class="architecture-pills">
+      <div class="arch-pill"><span>🖥️</span> System 1: Frontend UI</div>
+      <div class="arch-pill"><span>⚡</span> System 2: Django REST API</div>
+      <div class="arch-pill"><span>🗄️</span> Shared Database: PostgreSQL / SQLite</div>
+      <div class="arch-pill"><span>🔒</span> Passcode Security: 403 Forbidden on Unauthorized Updates</div>
+    </div>
+  </section>
+
+  <!-- Main Application Body -->
+  <main class="container">
+
+    <!-- View Switcher Tabs -->
+    <div class="view-tabs">
+      <button class="view-tab active" id="tabProfile">👤 My Profile / CV</button>
+      <button class="view-tab" id="tabDirectory">📂 Classmate Directory</button>
+      <button class="view-tab" id="tabApi">⚡ API Docs & Postman</button>
+    </div>
+
+    <!-- SECTION 1: My Profile View (System 1) -->
+    <section id="profileViewSection">
+      <div class="profile-card-wrapper">
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-avatar-container">
+              <img id="myAvatar" class="profile-avatar" src="" alt="Avatar">
+              <div id="myStudentIdBadge" class="profile-badge-id">ID: ---</div>
+            </div>
+            <h2 id="myName" class="profile-name">Loading Profile...</h2>
+            <p id="mySubtext" class="profile-subtext">Undergraduate Student</p>
+
+            <div class="profile-actions-bar">
+              <button id="btnEditMyCV" class="btn btn-primary">✏️ Edit My CV</button>
+              <button id="btnDeleteMyCV" class="btn btn-danger">🗑️ Delete CV</button>
+              <button class="btn btn-outline" onclick="copyCVJson(activeCVId)">📋 Copy JSON</button>
+              <button class="btn btn-outline" onclick="switchTab('directory')">👥 View Classmates</button>
+            </div>
+          </div>
+
+          <div class="profile-card-body">
+            <div class="info-tile">
+              <div class="info-tile-title">📧 Contact Information</div>
+              <div class="info-tile-value" style="font-size:0.95rem;">
+                Email: <span id="myEmail" style="color:var(--primary); font-weight:700;">---</span> • 
+                Phone: <span id="myPhone" style="font-weight:600;">---</span>
+              </div>
+            </div>
+
+            <div class="info-tile">
+              <div class="info-tile-title">🎓 Education & Degree</div>
+              <div id="myEducation" class="info-tile-value">---</div>
+            </div>
+
+            <div class="info-tile">
+              <div class="info-tile-title">💡 Technical Skills</div>
+              <div id="mySkills" class="skills-wrapper"></div>
+            </div>
+
+            <div class="info-tile">
+              <div class="info-tile-title">💼 Experience</div>
+              <div id="myExperience" class="info-tile-value" style="font-weight: 500; font-size: 0.95rem;">---</div>
+            </div>
+
+            <div class="info-tile">
+              <div class="info-tile-title">📖 Bio / Story</div>
+              <div id="myBio" class="bio-quote">"---"</div>
+            </div>
+
+            <div class="info-tile" style="background:#f0fdf4; border-color:#bbf7d0;">
+              <div class="info-tile-title" style="color:#16a34a;">🔒 Ownership & Permissions Status</div>
+              <div style="font-size:0.88rem; color:#166534;">
+                This CV is stored in the central database. Other students (Student B, Student C) can view it in the Directory, but only someone with the secret PIN can modify or delete it.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Classmate Directory -->
+    <section id="directoryViewSection" style="display: none;">
+      <div class="directory-header">
+        <div class="directory-title">
+          <h3>Classmate CV Directory</h3>
+          <p>Browse, search, and view other students' CVs stored in the shared database.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center; width: 100%; max-width: 480px;">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search by name, student ID, or skill...">
+          </div>
+          <span id="directoryCount" style="font-weight: 700; color: var(--primary); font-size: 0.88rem; white-space: nowrap;">0 Students</span>
+        </div>
+      </div>
+
+      <!-- Quick Skill Filter Chips -->
+      <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem; align-items:center;">
+        <span style="font-size:0.8rem; font-weight:700; color:#64748b;">Filter by Skill:</span>
+        <button class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.7rem; border-radius:999px;" onclick="filterBySkill('')">All</button>
+        <button class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.7rem; border-radius:999px;" onclick="filterBySkill('Flutter')">Flutter</button>
+        <button class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.7rem; border-radius:999px;" onclick="filterBySkill('Python')">Python</button>
+        <button class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.7rem; border-radius:999px;" onclick="filterBySkill('Cybersecurity')">Cybersecurity</button>
+        <button class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.7rem; border-radius:999px;" onclick="filterBySkill('React')">React</button>
+        <button class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.7rem; border-radius:999px;" onclick="filterBySkill('Machine Learning')">AI / ML</button>
+        <button class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.7rem; border-radius:999px;" onclick="filterBySkill('UI/UX')">UI/UX</button>
+        <button class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.7rem; border-radius:999px;" onclick="filterBySkill('PostgreSQL')">PostgreSQL / SQL</button>
+      </div>
+
+      <!-- Grid of Student CV Cards -->
+      <div class="directory-grid" id="directoryGrid">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </section>
+
+    <!-- SECTION 3: API Reference & Postman Guide -->
+    <section id="apiDocsSection" style="display: none;">
+      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 2rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem;">🔌 REST API Specification & Postman Testing</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+          The backend REST API provides full CRUD support with strict owner verification. You can test these endpoints using Postman, curl, or this web application.
+        </p>
+
+        <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span class="api-method method-get">GET</span>
+              <code style="font-weight: 700;">/api/cvs/</code>
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Get all students' CVs (Directory)</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span class="api-method method-get">GET</span>
+              <code style="font-weight: 700;">/api/cvs/{id}/</code>
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Get a particular student's CV (e.g. /api/cvs/101/)</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span class="api-method method-post">POST</span>
+              <code style="font-weight: 700;">/api/cvs/</code>
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Create and save a new CV to database</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span class="api-method method-put">PUT</span>
+              <code style="font-weight: 700;">/api/cvs/{id}/</code>
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Update a CV (Requires <code>X-CV-PIN</code> header or <code>passcode</code>)</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span class="api-method method-delete">DELETE</span>
+              <code style="font-weight: 700;">/api/cvs/{id}/</code>
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Delete a CV (Requires <code>X-CV-PIN</code> header or <code>passcode</code>)</span>
+          </div>
+        </div>
+
+        <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem;">Sample Postman Request Payload (POST /api/cvs/):</h4>
+        <div class="api-guide-card">
+<pre>{
+  "name": "Farzana Sadia Takeei",
+  "student_id": "2230907",
+  "email": "2211175@iub.edu.bd",
+  "phone": "+880 1712-345678",
+  "education": "BSc in CSE",
+  "skills": [
+    "Flutter",
+    "Python",
+    "Cybersecurity"
+  ],
+  "experience": "Software Development",
+  "bio": "Passionate about mobile apps & backend systems.",
+  "passcode": "1234"
+}</pre>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+          <a href="/api/cvs/" target="_blank" class="btn btn-primary">🌐 Open Django Browsable API</a>
+          <button class="btn btn-outline" onclick="copyCVJson(activeCVId)">📋 Copy Sample JSON</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: Create / Edit CV -->
+  <div class="modal-overlay" id="cvFormModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="cvModalTitle">Create New Student CV</h3>
+        <button class="modal-close-btn" onclick="closeModal('cvFormModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="cvForm">
+          <input type="hidden" id="formCvId">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="formName">Full Name *</label>
+              <input type="text" id="formName" required placeholder="e.g. Md. Jariful Abedin Ovi">
+            </div>
+            <div class="form-group">
+              <label for="formStudentId">Student ID *</label>
+              <input type="text" id="formStudentId" required placeholder="e.g. 2230907">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="formEmail">Email *</label>
+              <input type="email" id="formEmail" required placeholder="e.g. 2230907@iub.edu.bd">
+            </div>
+            <div class="form-group">
+              <label for="formPhone">Phone Number</label>
+              <input type="text" id="formPhone" placeholder="e.g. +880 1712-345678">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="formEducation">Education / Degree *</label>
+            <input type="text" id="formEducation" required value="BSc in Computer Science & Engineering" placeholder="e.g. BSc in CSE">
+          </div>
+
+          <div class="form-group">
+            <label for="formSkills">Technical Skills (Comma separated) *</label>
+            <input type="text" id="formSkills" required placeholder="e.g. Flutter, Python, PostgreSQL, Django REST">
+            <div class="form-help">Separate each skill with a comma. It will be stored as a JSON array in the database.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="formExperience">Work / Project Experience</label>
+            <input type="text" id="formExperience" placeholder="e.g. Mobile Application Developer & API Engineer">
+          </div>
+
+          <div class="form-group">
+            <label for="formBio">Bio / Personal Introduction</label>
+            <textarea id="formBio" placeholder="Write a brief summary about your passion, tech interests, and projects..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="formAvatarUrl">Avatar Image URL</label>
+            <input type="url" id="formAvatarUrl" placeholder="https://api.dicebear.com/7.x/avataaars/svg?seed=user">
+            <div style="display:flex; gap:0.5rem; margin-top:0.4rem;">
+              <button type="button" class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="setAvatarPreset('male')">Preset 1</button>
+              <button type="button" class="btn btn-outline" style="font-size:0.75rem; padding:0.25rem 0.6rem;" onclick="setAvatarPreset('female')">Preset 2</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="background:#fef3c7; padding:0.85rem; border-radius:8px; border:1px solid #fde68a;">
+            <label for="formPasscode" style="color:#92400e;">🔒 Secret PIN / Passcode *</label>
+            <input type="password" id="formPasscode" placeholder="e.g. 1234 or your Student ID">
+            <div class="form-help" style="color:#b45309;">
+              Only someone who enters this exact PIN will be allowed to update or delete this CV.
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
+            <button type="button" class="btn btn-outline" onclick="closeModal('cvFormModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save CV</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: View Full CV Details (When clicking a classmate's card) -->
+  <div class="modal-overlay" id="viewDetailsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Student CV Details</h3>
+        <button class="modal-close-btn" onclick="closeModal('viewDetailsModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="viewDetailsContent">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container" style="padding:0;">
+      <p>Student CV Hub • REST API Based CRUD System • Connected to Shared Database</p>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
+
