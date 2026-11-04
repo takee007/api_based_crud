@@ -1,0 +1,188 @@
+{
+  "info": {
+    "_postman_id": "a9b1c2d3-e4f5-4789-abcd-1234567890ab",
+    "name": "Student CV CRUD REST API with Individual Login",
+    "description": "Postman Collection for testing Multi-Student CV CRUD Operations with Central Shared Database, Individual Student Login, and Owner Authorization.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "cv_id",
+      "value": "101",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth - 1. Student Login (Sign In with Password)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.token) {",
+              "    pm.collectionVariables.set('auth_token', jsonData.token);",
+              "    console.log('Saved auth_token:', jsonData.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"student_id\": \"2230907\",\n  \"password\": \"2230907\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login/",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "auth", "login", "" ]
+        },
+        "description": "Individual student login with Student ID and Password. Automatically saves Bearer token for subsequent requests."
+      },
+      "response": []
+    },
+    {
+      "name": "Auth - 2. Student Register (New Account & CV)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sakib Al Hasan\",\n  \"student_id\": \"2239999\",\n  \"email\": \"sakib@iub.edu.bd\",\n  \"password\": \"pass1234\",\n  \"education\": \"BSc in Computer Science & Engineering\",\n  \"skills\": [\"Python\", \"Django\", \"PostgreSQL\"],\n  \"experience\": \"Junior Software Engineer\",\n  \"bio\": \"Passionate about full-stack web engineering.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/register/",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "auth", "register", "" ]
+        },
+        "description": "Register a new student with password and automatically save their CV to the database."
+      },
+      "response": []
+    },
+    {
+      "name": "Auth - 3. Get Currently Logged In Profile (Me)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/me/",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "auth", "me", "" ]
+        },
+        "description": "Retrieve the profile of the currently logged-in student using Bearer token."
+      },
+      "response": []
+    },
+    {
+      "name": "CRUD - 4. GET All CVs (Directory / Classmates)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/cvs/",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "cvs", "" ]
+        },
+        "description": "View all students' CV records from the shared database."
+      },
+      "response": []
+    },
+    {
+      "name": "CRUD - 5. GET Single Student CV (Read Student A)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/cvs/{{cv_id}}/",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "cvs", "{{cv_id}}", "" ]
+        },
+        "description": "Retrieve full profile information for a specific student by ID."
+      },
+      "response": []
+    },
+    {
+      "name": "CRUD - 6. PUT Update CV (Authorized with Login Token)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Md. Jariful Abedin Ovi (Updated)\",\n  \"student_id\": \"2230907\",\n  \"email\": \"2230907@iub.edu.bd\",\n  \"education\": \"BSc in Computer Science & Engineering\",\n  \"skills\": [\"Flutter\", \"Dart\", \"Django REST Framework\", \"PostgreSQL\"],\n  \"experience\": \"Senior Mobile App Engineer\",\n  \"bio\": \"Updated bio: Software Engineer specializing in mobile and cloud services.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cvs/102/",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "cvs", "102", "" ]
+        },
+        "description": "Owner updates their CV using their login Bearer token."
+      },
+      "response": []
+    },
+    {
+      "name": "CRUD - 7. PUT Update CV (Unauthorized - Test 403 Forbidden)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Attempted Unauthorized Modification by Another Student\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cvs/101/",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "cvs", "101", "" ]
+        },
+        "description": "Logged in as Student B (ID: 2230907), trying to edit Student A's CV (#101). Expected: 403 Forbidden."
+      },
+      "response": []
+    },
+    {
+      "name": "CRUD - 8. DELETE CV (Authorized Owner)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/cvs/102/",
+          "host": [ "{{base_url}}" ],
+          "path": [ "api", "cvs", "102", "" ]
+        },
+        "description": "Owner deletes their CV from the database."
+      },
+      "response": []
+    }
+  ]
+}
